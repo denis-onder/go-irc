@@ -9,8 +9,14 @@
   <body>
     <h1>Go IRC application</h1>
     <script>
+      function getTime() {
+        const now = new Date();
+
+        return `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+      }
+
       const ws = new WebSocket(`ws://${window.location.host}/ws`);
-      ws.onmessage = (msg) => console.log(msg);
+      ws.onopen = (msg) => console.log(msg);
     </script>
   </body>
 </html>
