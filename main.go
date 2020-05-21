@@ -16,15 +16,15 @@ const PORT = ":5000"
 // BroadcastRoom => Channel for broadcasting to all clients
 const BroadcastRoom = "broadcast"
 
-// Message => Used to form messages
-type Message struct {
-	User string `json:"User"`
-	Body string `json:"Body"`
-}
-
 type user struct {
 	Name  string
 	Color string
+}
+
+// Message => Used to form messages
+type Message struct {
+	User user   `json:"User"`
+	Body string `json:"Body"`
 }
 
 var messages []Message
@@ -55,18 +55,25 @@ func main() {
 		json.Unmarshal([]byte(msg), &newUser)
 		users[s.ID()] = newUser
 		s.Join(BroadcastRoom)
-		server.BroadcastToRoom("/", BroadcastRoom, "user_joined", newUser.Name+" joined the chat room.")
+		server.BroadcastToRoom("/", BroadcastRoom, "admin", newUser.Name+" joined the chat room.")
 	})
 
 	server.OnEvent("/", "message_sent", func(s socketio.Conn, msg string) {
-		server.BroadcastToRoom("/", BroadcastRoom, "new_message", users[s.ID()].Name+" joined the chat room.")
+		unmarshaled := Message{
+			User: users[s.ID()],
+			Body: msg,
+		}
+
+		message, _ := json.Marshal(unmarshaled)
+
+		server.BroadcastToRoom("/", BroadcastRoom, "new_message", string(message))
 	})
 
 	server.OnError("/", func(s socketio.Conn, e error) {
 		str := e.Error()
 
 		if strings.Contains(str, "going away") {
-			server.BroadcastToRoom("/", BroadcastRoom, "user_left", users[s.ID()].Name+" has left chat room.")
+			server.BroadcastToRoom("/", BroadcastRoom, "admin", users[s.ID()].Name+" has left chat room.")
 			delete(users, s.ID())
 		}
 	})

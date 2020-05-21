@@ -7,18 +7,12 @@
     <title>Go IRC</title>
   </head>
   <body>
-    <div class="chat" id="chat">
-      <div class="chat_msg">
-        <span class="chat_msg_timestamp">00:00:00 | </span>
-        <span class="chat_msg_author">[test_user]: </span>
-        <span class="chat_msg_body">test body 1 2 3 4</span>
-      </div>
-    </div>
+    <div class="chat" id="chat"></div>
     <input
       type="text"
       id="message_input"
       class="message_input"
-      placeholder="message: "
+      placeholder="message: (press tab to focus)"
     />
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2/dist/socket.io.js"></script>
     <script defer src="/script.js"></script>
