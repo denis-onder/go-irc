@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	socketio "github.com/googollee/go-socket.io"
 )
@@ -62,7 +63,12 @@ func main() {
 	})
 
 	server.OnError("/", func(s socketio.Conn, e error) {
-		fmt.Println("meet error:", e)
+		str := e.Error()
+
+		if strings.Contains(str, "going away") {
+			server.BroadcastToRoom("/", BroadcastRoom, "user_left", users[s.ID()].Name+" has left chat room.")
+			delete(users, s.ID())
+		}
 	})
 
 	go func() {

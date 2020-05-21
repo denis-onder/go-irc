@@ -40,6 +40,9 @@ socket.on("connect", function () {
 socket.on("user_joined", (msg) => {
   output.innerHTML += generateMessage(generateTimestamp(), "admin", msg);
 });
-// socket.on("event", function (data) {});
+
+socket.on("user_left", (msg) => {
+  output.innerHTML += generateMessage(generateTimestamp(), "admin", msg);
+});
+
 socket.on("new_user", (msg) => console.log(msg));
-// socket.on("disconnect", function () {});
