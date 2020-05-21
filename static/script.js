@@ -28,6 +28,7 @@ function generateMessage(time, author, body, color = false) {
 input.addEventListener("keydown", (e) => {
   if (e.keyCode !== 13) return;
   socket.emit("message_sent", e.target.value);
+  e.target.value = "";
 });
 
 const socket = io(`http://${window.location.host}`);
@@ -35,6 +36,20 @@ const socket = io(`http://${window.location.host}`);
 const username = `user_${Math.floor(Math.random() * 10)}${Math.floor(
   Math.random() * 10
 )}${Math.floor(Math.random() * 10)}`;
+
+socket.on("messages", (json) => {
+  const messages = JSON.parse(json);
+  if (!messages) return;
+
+  messages.forEach(({ User: user, Body: body }) => {
+    output.innerHTML += generateMessage(
+      generateTimestamp(),
+      user.Name,
+      body,
+      user.Name === username ? "255,255,255" : user.Color
+    );
+  });
+});
 
 socket.on("connect", () =>
   socket.emit(

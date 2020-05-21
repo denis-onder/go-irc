@@ -45,8 +45,10 @@ func main() {
 	}
 
 	server.OnConnect("/", func(s socketio.Conn) error {
+		payload, _ := json.Marshal(messages)
 		s.SetContext("")
 		fmt.Println("conencted:", s.ID())
+		s.Emit("messages", string(payload))
 		return nil
 	})
 
@@ -65,6 +67,7 @@ func main() {
 		}
 
 		message, _ := json.Marshal(unmarshaled)
+		storeNewMessage(message)
 
 		server.BroadcastToRoom("/", BroadcastRoom, "new_message", string(message))
 	})
