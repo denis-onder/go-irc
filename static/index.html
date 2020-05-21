@@ -8,15 +8,16 @@
   </head>
   <body>
     <h1>Go IRC application</h1>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@2/dist/socket.io.js"></script>
     <script>
-      function getTime() {
-        const now = new Date();
-
-        return `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-      }
-
-      const ws = new WebSocket(`ws://${window.location.host}/ws`);
-      ws.onopen = (msg) => console.log(msg);
+      var socket = io(`http://${window.location.host}`);
+      console.log(socket);
+      socket.on("connect", function () {
+        console.log("connected");
+      });
+      // socket.on("event", function (data) {});
+      socket.on("new_user", (msg) => console.log(msg));
+      // socket.on("disconnect", function () {});
     </script>
   </body>
 </html>

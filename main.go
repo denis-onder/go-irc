@@ -6,11 +6,16 @@ import (
 	"log"
 	"net/http"
 
+	socketio "github.com/googollee/go-socket.io"
+
 	"github.com/gorilla/websocket"
 )
 
 // PORT => Server port
 const PORT = ":5000"
+
+// BROADCAST_ROOM => Channel for broadcasting to all clients
+const BROADCAST_ROOM = "broadcast"
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -49,13 +54,35 @@ func serveWSEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	server, err := socketio.NewServer(nil)
+
+	if err != nil {
+		log.Fatal("socketio.NewServer", err)
+	}
+
+	server.OnConnect("/", func(s socketio.Conn) error {
+		s.SetContext("")
+		fmt.Println("conencted:", s.ID())
+		s.Join(BROADCAST_ROOM)
+		server.BroadcastToRoom("/", BROADCAST_ROOM, "new_user", "connected: "+s.ID())
+		return nil
+	})
+
+	server.OnError("/", func(s socketio.Conn, e error) {
+		fmt.Println("meet error:", e)
+	})
+
+	go func() {
+		log.Fatal(server.Serve())
+	}()
+
+	defer server.Close()
+
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
-	http.HandleFunc("/ws", serveWSEndpoint)
+	http.Handle("/socket.io/", server)
+
 	// Start the server
 	fmt.Printf("Server running!\nhttp://localhost%s/\n", PORT)
-	err := http.ListenAndServe(PORT, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe", err)
-	}
+	log.Fatal(http.ListenAndServe(PORT, nil))
 }
