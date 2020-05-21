@@ -7,20 +7,13 @@ import (
 	"net/http"
 
 	socketio "github.com/googollee/go-socket.io"
-
-	"github.com/gorilla/websocket"
 )
 
 // PORT => Server port
 const PORT = ":5000"
 
-// BROADCAST_ROOM => Channel for broadcasting to all clients
-const BROADCAST_ROOM = "broadcast"
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
+// BroadcastRoom => Channel for broadcasting to all clients
+const BroadcastRoom = "broadcast"
 
 // Message => Used to form messages
 type Message struct {
@@ -28,29 +21,19 @@ type Message struct {
 	Body string `json:"Body"`
 }
 
+type user struct {
+	Name  string
+	Color string
+}
+
 var messages []Message
+
+var users = make(map[string]user)
 
 func storeNewMessage(message []byte) {
 	var msg Message
 	json.Unmarshal(message, &msg)
 	messages = append(messages, msg)
-}
-
-func serveWSEndpoint(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		fmt.Println("serveWSEndpoint", err)
-		return
-	}
-	conn.WriteJSON(messages)
-	for {
-		_, p, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("WriteMessage", err)
-			return
-		}
-		storeNewMessage(p)
-	}
 }
 
 func main() {
@@ -63,9 +46,19 @@ func main() {
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
 		fmt.Println("conencted:", s.ID())
-		s.Join(BROADCAST_ROOM)
-		server.BroadcastToRoom("/", BROADCAST_ROOM, "new_user", "connected: "+s.ID())
 		return nil
+	})
+
+	server.OnEvent("/", "new_user", func(s socketio.Conn, msg string) {
+		var newUser user
+		json.Unmarshal([]byte(msg), &newUser)
+		users[s.ID()] = newUser
+		s.Join(BroadcastRoom)
+		server.BroadcastToRoom("/", BroadcastRoom, "user_joined", newUser.Name+" joined the chat room.")
+	})
+
+	server.OnEvent("/", "message_sent", func(s socketio.Conn, msg string) {
+		server.BroadcastToRoom("/", BroadcastRoom, "new_message", users[s.ID()].Name+" joined the chat room.")
 	})
 
 	server.OnError("/", func(s socketio.Conn, e error) {
