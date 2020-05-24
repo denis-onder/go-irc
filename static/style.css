@@ -1,5 +1,6 @@
 :root {
   --message_input_height: 75px !important;
+  --users_window_width: 7.5vw;
 }
 
 * {
@@ -21,6 +22,10 @@ body {
   margin-bottom: var(--message_input_height);
 }
 
+.chat_msg {
+  max-width: 89%;
+}
+
 .chat_msg--root {
   color: rgb(0, 255, 0);
 }
@@ -30,7 +35,7 @@ body {
   right: 0;
   top: 0;
   height: calc(100vh - var(--message_input_height));
-  width: 7.5vw;
+  width: var(--users_window_width);
   border-left: 1px solid #fff;
   display: flex;
   flex-direction: column;
@@ -46,6 +51,9 @@ body {
 }
 
 .users_user_name {
+  max-width: 10ch !important;
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 

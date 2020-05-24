@@ -47,6 +47,8 @@ const username = `user_${Math.floor(Math.random() * 10)}${Math.floor(
   Math.random() * 10
 )}${Math.floor(Math.random() * 10)}`;
 
+input.setAttribute("placeholder", `[${username}]: (press tab to focus)`);
+
 socket.on("messages", (json) => {
   const messages = JSON.parse(json);
   if (!messages) return;
