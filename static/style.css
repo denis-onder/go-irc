@@ -1,3 +1,11 @@
+:root {
+  --message_input_height: 75px !important;
+}
+
+* {
+  font-size: 16px;
+}
+
 body {
   width: 100vw;
   background-color: black;
@@ -10,25 +18,57 @@ body {
 .chat {
   min-height: 100vh;
   width: 100%;
-  font-size: 16px;
+  margin-bottom: var(--message_input_height);
 }
 
-.chat_msg--admin {
+.chat_msg--root {
   color: rgb(0, 255, 0);
 }
 
+.users {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: calc(100vh - var(--message_input_height));
+  width: 7.5vw;
+  border-left: 1px solid #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+}
+
+.users_user {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.users_user_name {
+  text-overflow: ellipsis;
+}
+
+.users_user_color {
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: 10px;
+}
+
 .message_input {
+  z-index: 1;
   position: fixed;
   bottom: 0;
   left: 0;
   background-color: black;
   color: white;
   width: 100%;
+  height: var(--message_input_height);
   border: none;
   outline: none;
   border-top: 1px solid #fff;
-  font-size: 16px;
-  padding: 1em;
+  padding: 0 1em;
 }
 
 .message_input::placeholder {

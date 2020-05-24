@@ -17,8 +17,8 @@ const PORT = ":5000"
 const BroadcastRoom = "broadcast"
 
 type user struct {
-	Name  string
-	Color string
+	Name  string `json:"Name"`
+	Color string `json:"Color"`
 }
 
 // Message => Used to form messages
@@ -55,9 +55,11 @@ func main() {
 	server.OnEvent("/", "new_user", func(s socketio.Conn, msg string) {
 		var newUser user
 		json.Unmarshal([]byte(msg), &newUser)
+		activeUsers, _ := json.Marshal(users)
 		users[s.ID()] = newUser
 		s.Join(BroadcastRoom)
 		server.BroadcastToRoom("/", BroadcastRoom, "admin", newUser.Name+" joined the chat room.")
+		server.BroadcastToRoom("/", BroadcastRoom, "users", string(activeUsers))
 	})
 
 	server.OnEvent("/", "message_sent", func(s socketio.Conn, msg string) {
@@ -78,6 +80,8 @@ func main() {
 		if strings.Contains(str, "going away") {
 			server.BroadcastToRoom("/", BroadcastRoom, "admin", users[s.ID()].Name+" has left chat room.")
 			delete(users, s.ID())
+			activeUsers, _ := json.Marshal(users)
+			server.BroadcastToRoom("/", BroadcastRoom, "users", string(activeUsers))
 		}
 	})
 
