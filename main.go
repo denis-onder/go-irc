@@ -31,6 +31,22 @@ var messages []Message
 
 var users = make(map[string]user)
 
+func sendActiveUsers(server *socketio.Server) {
+	var payload []user
+
+	for _, v := range users {
+		payload = append(payload, v)
+	}
+
+	stringified, err := json.Marshal(payload)
+
+	if err != nil {
+		fmt.Println("sendActiveUsers:", err)
+	}
+
+	server.BroadcastToRoom("/", BroadcastRoom, "users", string(stringified))
+}
+
 func storeNewMessage(message []byte) {
 	var msg Message
 	json.Unmarshal(message, &msg)
@@ -55,11 +71,10 @@ func main() {
 	server.OnEvent("/", "new_user", func(s socketio.Conn, msg string) {
 		var newUser user
 		json.Unmarshal([]byte(msg), &newUser)
-		activeUsers, _ := json.Marshal(users)
 		users[s.ID()] = newUser
 		s.Join(BroadcastRoom)
 		server.BroadcastToRoom("/", BroadcastRoom, "admin", newUser.Name+" joined the chat room.")
-		server.BroadcastToRoom("/", BroadcastRoom, "users", string(activeUsers))
+		sendActiveUsers(server)
 	})
 
 	server.OnEvent("/", "message_sent", func(s socketio.Conn, msg string) {
@@ -80,8 +95,7 @@ func main() {
 		if strings.Contains(str, "going away") {
 			server.BroadcastToRoom("/", BroadcastRoom, "admin", users[s.ID()].Name+" has left chat room.")
 			delete(users, s.ID())
-			activeUsers, _ := json.Marshal(users)
-			server.BroadcastToRoom("/", BroadcastRoom, "users", string(activeUsers))
+			sendActiveUsers(server)
 		}
 	})
 
