@@ -60,6 +60,12 @@ func main() {
 		log.Fatal("socketio.NewServer", err)
 	}
 
+	db, err := connect()
+
+	if err != nil {
+		log.Fatal("db.connect(): ", err)
+	}
+
 	server.OnConnect("/", func(s socketio.Conn) error {
 		payload, _ := json.Marshal(messages)
 		s.SetContext("")
